@@ -1,7 +1,11 @@
 import { useRef, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { addTodos, removeTodos } from '../../redux/todos/todosSlice';
+import {
+  addTodos,
+  removeTodos,
+  updateTodos,
+} from '../../redux/todos/todosSlice';
 
 import styles from './AddTodosForm.module.css';
 
@@ -13,6 +17,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     addTodo: (obj) => dispatch(addTodos(obj)),
     removeTodo: (id) => dispatch(removeTodos(id)),
+    updateTodo: (obj) => dispatch(updateTodos(obj)),
   };
 };
 
@@ -20,6 +25,18 @@ const AddTodosForm = (props) => {
   const [todo, setTodo] = useState('');
 
   const inputRef = useRef(true);
+
+  const changeFocus = () => {
+    inputRef.current.disabled = false;
+    inputRef.current.focus();
+  };
+
+  const update = (id, value, event) => {
+    if (event.which === 13) {
+      props.updateTodo({ id, item: value });
+      inputRef.current.disabled = true;
+    }
+  };
 
   const handleChange = (event) => {
     setTodo(event.target.value);
@@ -64,9 +81,16 @@ const AddTodosForm = (props) => {
       <ul>
         {props.todos.todos.todos.map((item) => (
           <li key={item.id}>
-            <textarea ref={inputRef} disabled={inputRef} value={item.item} />
+            <textarea
+              ref={inputRef}
+              disabled={inputRef}
+              defaultValue={item.item}
+              onKeyPress={(event) =>
+                update(item.id, inputRef.current.value, event)
+              }
+            />
 
-            <button>Edit</button>
+            <button onClick={() => changeFocus()}>Edit</button>
             <button onClick={() => props.removeTodo(item.id)}>Delete</button>
           </li>
         ))}
